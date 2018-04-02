@@ -87,8 +87,6 @@ router.post('/addLocation', (req, res, next) => {
     const location = new Location();
     location.title = req.body.title;
     location.loc = [req.body.lat, req.body.lng];
-    // location.long = req.body.loc[0]; 
-    // location.lat = req.body.loc[1];
 
     location.save()
         .then(result => {
@@ -101,7 +99,7 @@ router.post('/addLocation', (req, res, next) => {
                     location: result.loc,
                     request: {
                         type: 'POST',
-                        url: 'https://damp-sierra-13906.herokuapp.com/api/addLocation'
+                        url: ''
                     }
                 }
             });
@@ -172,7 +170,8 @@ router.post('/addShift', (req, res, next) => {
         shift_title: req.body.shift_title,
         vehicle: req.body.vehicle
     })
-    shift.save().then(result => {
+    shift.save()
+    .then(result => {
         console.log(result);
         res.status(201).json({
             status: 'Created shift Succesfully',
@@ -187,12 +186,12 @@ router.post('/addShift', (req, res, next) => {
             }
         });
     })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-            });
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+        error: err
         });
+    });
 });
 
 router.get('/getAllShift', (req, res, next) => {
