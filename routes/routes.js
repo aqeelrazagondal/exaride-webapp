@@ -5,12 +5,15 @@ require('../config/passport')(passport);
 var express = require('express');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
+var moment = require('moment-timezone');
+var m = moment().tz("America/Los_Angeles").format();
 
 var Location = require('../models/Location');
 var Passenger = require('../models/Passenger');
 var Shift = require('../models/Shift');
 var User = require('../models/User');
 var Vehicle = require('../models/Vehicle');
+var Routes = require('../models/Routes');
 
 
 router.post('/register', function (req, res) {
@@ -32,7 +35,7 @@ router.post('/register', function (req, res) {
                     password: result.password,
                     request: {
                         type: 'POST',
-                        url: 'http://localhost:3100/api/register/'
+                        url: 'https://safe-savannah-80688.herokuapp.com/api/register/'
                     }
                 }
             });
@@ -99,7 +102,7 @@ router.post('/addLocation', (req, res, next) => {
                     location: result.loc,
                     request: {
                         type: 'POST',
-                        url: ''
+                        url: 'https://safe-savannah-80688.herokuapp.com/api/addLocation'
                     }
                 }
             });
@@ -165,23 +168,39 @@ router.post('/addPassenger', (req, res) => {
 
 
 router.post('/addShift', (req, res, next) => {
+    // moment().valueOf();
+    // moment().unix()
+    let m = moment(); 
+    var starting_time = m.format("h: mm: ss a");
+    var ending_time = m.format("h: mm: ss a");
+
     const shift = new Shift({
-        _userId: new mongoose.Types.ObjectId(),
+        _driverId: new mongoose.Types.ObjectId(),
+        _routeId: new mongoose.Types.ObjectId(),
         shift_title: req.body.shift_title,
-        vehicle: req.body.vehicle
-    })
+        vehicle: req.body.vehicle,
+        shift_status: req.body.shift_status,
+        starting_time: req.body.starting_time,
+        ending_time: req.body.ending_time
+    });
+
     shift.save()
     .then(result => {
         console.log(result);
         res.status(201).json({
-            status: 'Created shift Succesfully',
+            status: 'success',
+            message: 'Created shift Succesfully',
             shiftDetail: {
-                _userId: result._userId,
+                _driverId: result._driverId,
+                _routeId: result._routeId,
                 shift_title: result.shift_title,
                 vehicle: result.vehicle,
+                shift_status: result.shift_status,
+                starting_time: result.starting_time,
+                ending_time: result.ending_time,
                 request: {
                     type: 'POST',
-                    url: 'https://damp-sierra-13906.herokuapp.com/api/' + result._userId
+                    url: 'https://safe-savannah-80688.herokuapp.com/api/' + result._driverId
                 }
             }
         });
@@ -196,7 +215,7 @@ router.post('/addShift', (req, res, next) => {
 
 router.get('/getAllShift', (req, res, next) => {
     Shift.find()
-        .select('_userId shift_title vehicle')
+        .select('_driverId shift_title vehicle shift_status starting_time ending_time')
         .exec()
         .then(docs => {
             const response = {
@@ -205,10 +224,13 @@ router.get('/getAllShift', (req, res, next) => {
                     return {
                         vehicle: doc.vehicle,
                         shift_title: doc.shift_title,
-                        _userId: doc._userId,
+                        _driverId: doc._driverId,
+                        shift_status: doc.shift_status,
+                        starting_time: doc.starting_time,
+                        ending_time: doc.ending_time,
                         request: {
                             type: 'GET',
-                            url: 'https://damp-sierra-13906.herokuapp.com/api/getAllShift/' + doc._userId
+                            url: 'https://safe-savannah-80688.herokuapp.com/api/getAllShift/' + doc._driverId
                         }
                     }
                 })
@@ -243,7 +265,7 @@ router.post('/addVehicle', (req, res, next) => {
                 seatingCapacity: result.seatingCapacity,
                 request: {
                     type: 'POST',
-                    url: 'https://damp-sierra-13906.herokuapp.com/api/addVehicle' + result._userId
+                    url: 'https://safe-savannah-80688.herokuapp.com/api/addVehicle' + result._userId
                 }
             }
         });
@@ -256,5 +278,64 @@ router.post('/addVehicle', (req, res, next) => {
         });
 });
 
+router.post('/addRoute', (req, res, next) => {
+    const routes = new Routes({
+        routeManager: req.body.routeManager,
+        _routeId: mongoose.Types.ObjectId(),
+        _beginLocationId: new mongoose.Types.ObjectId(),
+        _endLocationId: new mongoose.Types.ObjectId()
+    })
+    routes.save().then(result => {
+        console.log(result);
+        res.status(201).json({
+            status: 'Successful',
+            message: 'Routes added Succesfully',
+            object: {
+                _routeId: result._routeId,
+                routeManager: result.routeManager,
+                _beginLocationId: result._beginLocationId,
+                _endLocationId: result._endLocationId
+            }
+        });
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            error: err
+        });
+    });
+});
+
+router.get('/getRoutes', (req, res, next) => {
+    Shift.find()
+        .exec()
+        .then(docs => {
+            const response = {
+                count: docs.length,
+                shift: docs.map(doc => {
+                    return {
+                        vehicle: doc.vehicle,
+                        shift_title: doc.shift_title,
+                        _driverId: doc._driverId,
+                        shift_status: doc.shift_status,
+                        starting_time: doc.starting_time,
+                        ending_time: doc.ending_time,
+                        request: {
+                            type: 'GET',
+                            url: 'https://safe-savannah-80688.herokuapp.com/api/getAllShift/' + doc._driverId
+                        }
+                    }
+                })
+            }
+            console.log(docs);
+            res.status(200).json(response);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: err
+            });
+        });
+});
 
 module.exports = router;

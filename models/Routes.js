@@ -2,12 +2,10 @@ var mongoose = require('mongoose');
 var Location = require('./Location');
 
 var RouteSchema = new mongoose.Schema({
-    //comment//comment
-
+    _routeId: mongoose.Schema.Types.ObjectId,
     routeManager: String,
-    _beginLocation: { type: mongoose.Schema.Types.ObjectId, ref: 'Location', default: null },
-    _endLocation: { type: mongoose.Schema.Types.ObjectId, ref: 'Location', default: null }
-
+    _beginLocationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Location', default: null },
+    _endLocationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Location', default: null }
 
 }, { timestamps: true });
 
