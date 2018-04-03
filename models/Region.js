@@ -2,8 +2,7 @@ var mongoose = require('mongoose');
 
 // Define our schema
 var RegionSchema = new mongoose.Schema({
-    //comment
-
+ 
     name: String
 
 }, { timestamps: true });

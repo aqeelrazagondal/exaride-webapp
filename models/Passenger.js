@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 var PassengerSchema = new mongoose.Schema({
-    //comment
+    
     phone: { type: String, unique: true },
     full_name: String,
     profile_photo_url: { type: String, default: null },

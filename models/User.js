@@ -3,8 +3,7 @@ var Schema = mongoose.Schema;
 var bcrypt = require('bcrypt-nodejs');
 
 var UserSchema = new Schema({
-    //comment
-    // _id: mongoose.Schema.Types.ObjectId,
+   
     username: {
         type: String,
         unique: true,
@@ -14,7 +13,7 @@ var UserSchema = new Schema({
         type: String,
         required: true
     },
-    phone: { type: String, unique: true },
+    phone: { type: String},
     full_name: String,
     profile_photo_url: { type: String, default: null },
     active: Boolean,
@@ -23,7 +22,6 @@ var UserSchema = new Schema({
     user_type: String,
     address: {
         addr1: String,
-        addr2: String,
         city: String,
         state: String,
         country: String,
@@ -33,7 +31,6 @@ var UserSchema = new Schema({
     deactivate_user: { type: Boolean, default: false },
     country_code: String,
     verification_code: String,
-    palyer_id: String,
     share_location: { type: Boolean, default: true },
     share_loc_flag_time: { type: Date, default: Date.now },
     loc: {

@@ -14,6 +14,7 @@ var Shift = require('../models/Shift');
 var User = require('../models/User');
 var Vehicle = require('../models/Vehicle');
 var Routes = require('../models/Routes');
+var RouteLocation = require('../models/RouteLocation');
 
 
 router.post('/register', function (req, res) {
@@ -22,30 +23,28 @@ router.post('/register', function (req, res) {
     } else {
         var newUser = new User({
             username: req.body.username,
-            password: req.body.password
+            password: req.body.password,
+            user_type: req.body.user_type,
+            email: req.body.email
         });
 
         // save the user
         newUser.save().then(result => {
             console.log(result);
             res.status(201).json({
+                status: 'success',
                 message: 'Created User Succesfully',
-                user: {
-                    username: result.username,
-                    password: result.password,
-                    request: {
-                        type: 'POST',
-                        url: 'https://safe-savannah-80688.herokuapp.com/api/register/'
-                    }
+                object: {
+                    result
                 }
             });
         })
-            .catch(err => {
-                console.log(err);
-                res.status(500).json({
-                    error: err
-                });
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+            error: err
             });
+        });
     }
 });
 
@@ -64,11 +63,19 @@ router.post('/login', function (req, res) {
                 if (isMatch && !err) {
                     // if user is found and password is right create a token
                     var token = jwt.sign(user, config.secret);
+                    console.log("isMatch" + isMatch);
 
                     userResponseObject = new User({
-                        username: req.body.username,
-                        password: req.body.password
+                        username: user.username,
+                        user_type: user.user_type,
+                        email: user.email,
+                        last_shared_loc_time: user.last_shared_loc_time,
+                        share_loc_flag_time: user.share_loc_flag_time,
+                        deactivate_user: user.deactivate_user,
+                        profile_photo_url: user.profile_photo_url,
+                        share_location: user.share_location
                     });
+                    console.log(userResponseObject);
                     // return the information including token as JSON
                     res.json({
                         status: "success",
@@ -96,14 +103,11 @@ router.post('/addLocation', (req, res, next) => {
             // console.log(result.location);
             console.log(result);
             res.status(201).json({
-                status: 'Added Location Succesfully',
-                locationDetail: {
+                status: 'success',
+                message: 'Added Location Succesfully',
+                object: {
                     title: result.title,
-                    location: result.loc,
-                    request: {
-                        type: 'POST',
-                        url: 'https://safe-savannah-80688.herokuapp.com/api/addLocation'
-                    }
+                    location: result.loc
                 }
             });
         })
@@ -120,7 +124,6 @@ router.get('/getAllLocations', (req, res, next) => {
         .exec()
         .then(docs => {
             const response = {
-                count: docs.length,
                 status: 'Success',
                 message: 'List of Locations',
                 object: [docs]
@@ -168,21 +171,23 @@ router.post('/addPassenger', (req, res) => {
 
 
 router.post('/addShift', (req, res, next) => {
+   
     // moment().valueOf();
     // moment().unix()
-    let m = moment(); 
-    var starting_time = m.format("h: mm: ss a");
-    var ending_time = m.format("h: mm: ss a");
-
+    // let m = moment(); 
+    // var starting_time = m.format("h: mm: ss a");
+    // var ending_time = m.format("h: mm: ss a");
+ 
     const shift = new Shift({
-        _driverId: new mongoose.Types.ObjectId(),
-        _routeId: new mongoose.Types.ObjectId(),
+        _driverId: req.body._driverId,
+        _routeId: req.body._routeId,
         shift_title: req.body.shift_title,
         vehicle: req.body.vehicle,
         shift_status: req.body.shift_status,
         starting_time: req.body.starting_time,
         ending_time: req.body.ending_time
     });
+    console.log(shift);
 
     shift.save()
     .then(result => {
@@ -197,11 +202,7 @@ router.post('/addShift', (req, res, next) => {
                 vehicle: result.vehicle,
                 shift_status: result.shift_status,
                 starting_time: result.starting_time,
-                ending_time: result.ending_time,
-                request: {
-                    type: 'POST',
-                    url: 'https://safe-savannah-80688.herokuapp.com/api/' + result._driverId
-                }
+                ending_time: result.ending_time
             }
         });
     })
@@ -214,36 +215,42 @@ router.post('/addShift', (req, res, next) => {
 });
 
 router.get('/getAllShift', (req, res, next) => {
+    
+    // User.find({}, function (err, users) {
+    //     if (err) throw err;
+
+    //     console.log(users);        
+    // });    
+
     Shift.find()
-        .select('_driverId shift_title vehicle shift_status starting_time ending_time')
         .exec()
         .then(docs => {
             const response = {
-                count: docs.length,
-                shift: docs.map(doc => {
+                status: 'success',
+                message: 'List of shifts',
+                object: docs.map(doc => {                     
+
                     return {
-                        vehicle: doc.vehicle,
-                        shift_title: doc.shift_title,
                         _driverId: doc._driverId,
+                        // driverName: userObj,
+                        _routeId: doc._routeId,
+                        shift_title: doc.shift_title,
+                        vehicle: doc.vehicle,
                         shift_status: doc.shift_status,
                         starting_time: doc.starting_time,
-                        ending_time: doc.ending_time,
-                        request: {
-                            type: 'GET',
-                            url: 'https://safe-savannah-80688.herokuapp.com/api/getAllShift/' + doc._driverId
-                        }
+                        ending_time: doc.ending_time
                     }
-                })
-            }
-            console.log(docs);
-            res.status(200).json(response);
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
+                    })
+                }
+                // console.log(docs);
+                res.status(200).json(response);
+            })
+            .catch(err => {
+                console.log(err);
+                res.status(500).json({
                 error: err
+                });
             });
-        });
 });
 
 router.post('/addVehicle', (req, res, next) => {
@@ -319,11 +326,7 @@ router.get('/getRoutes', (req, res, next) => {
                         _driverId: doc._driverId,
                         shift_status: doc.shift_status,
                         starting_time: doc.starting_time,
-                        ending_time: doc.ending_time,
-                        request: {
-                            type: 'GET',
-                            url: 'https://safe-savannah-80688.herokuapp.com/api/getAllShift/' + doc._driverId
-                        }
+                        ending_time: doc.ending_time
                     }
                 })
             }
@@ -338,4 +341,74 @@ router.get('/getRoutes', (req, res, next) => {
         });
 });
 
+
+router.post('/addRoutLocations', (req, res, next) => {
+    Location.findById(req.body._id)
+        .exec()
+        .then(docs => {
+            const locationResponse = {
+                count: docs.length,
+                locations: docs.map(doc => {
+                    return {
+                        
+                    }
+                })
+            }
+            console.log(locationResponse);
+
+            res.status(200).json(locationResponse);
+        })
+    const routelocation = new RouteLocation({
+        _routeId: new mongoose.Types.ObjectId(),
+        _userId: new mongoose.Types.ObjectId()
+    });
+    
+    routelocation.save().then(result => {
+        console.log(result);
+        res.status(201).json({
+            status: 'Successful',
+            message: 'Routes route location Succesfully',
+            object: {
+                _routeId: result._routeId,
+                _userId: result._userId
+            }
+        });
+    })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: err
+            });
+        });
+});
+
+router.get('/getAllRouteLocations', (req, res, next) => {
+
+    Shift.find()
+        .exec()
+        .then(docs => {
+            const response = {
+                count: docs.length,
+                status: 'success',
+                message: 'Route locations',
+                routeLocations: docs.map(doc => {
+                    return {
+                            _routeId: doc._routeId,
+                        // _userId: doc._userId,
+                            locationResponse: doc.locationResponse
+                        }
+                    })
+                }
+            console.log(docs);
+            res.status(200).json(response);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+            error: err
+        });
+    });
+
+    
+});
 module.exports = router;

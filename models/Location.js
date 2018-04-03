@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 var LocationSchema = new mongoose.Schema({
-    //comment
+   
     title: String,
     // latitude: String,
     // longitude: String

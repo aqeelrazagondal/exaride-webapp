@@ -5,8 +5,7 @@ var Routes = require('./Routes');
 var User = require('./User');
 
 var ShiftSchema = new mongoose.Schema({
-    //comment
-
+    
     _driverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, required: true},
     _routeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Routes', default: null },
     // passenger: { type: mongoose.Schema.Types.ObjectId, ref: 'Passenger', default: null, required: true},

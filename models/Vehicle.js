@@ -2,8 +2,7 @@ var mongoose = require('mongoose');
 
 // Define our schema
 var VehicleSchema = new mongoose.Schema({
-    //comment
-
+   
     _userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' ,default:null },
     regNumber: String,
     type: String,
