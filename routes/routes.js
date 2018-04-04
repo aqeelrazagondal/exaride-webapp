@@ -222,24 +222,36 @@ router.get('/getAllShift', (req, res, next) => {
     //     console.log(users);        
     // });    
 
+    var drivername;
     Shift.find()
         .exec()
         .then(docs => {
             const response = {
                 status: 'success',
                 message: 'List of shifts',
-                object: docs.map(doc => {                     
+                object: docs.map(doc => {  
+                    // console.log("driver id" +doc._driverId);
+                    //  User.findOne({ _id:doc._driverId})
+                    //     .exec(function(err,user){
 
-                    return {
-                        _driverId: doc._driverId,
-                        // driverName: userObj,
-                        _routeId: doc._routeId,
-                        shift_title: doc.shift_title,
-                        vehicle: doc.vehicle,
-                        shift_status: doc.shift_status,
-                        starting_time: doc.starting_time,
-                        ending_time: doc.ending_time
-                    }
+                    //         if(user){
+                    //             console.log("Username" + user.username);
+                    //             drivername=user.username;
+                            
+                    //         }else{
+                    //             console.log("user not found");
+                    //         }
+
+                            return {
+                                _driverId: doc._driverId,
+                                // driverName: drivername,
+                                _routeId: doc._routeId,
+                                shift_title: doc.shift_title,
+                                vehicle: doc.vehicle,
+                                shift_status: doc.shift_status,
+                                starting_time: doc.starting_time,
+                                ending_time: doc.ending_time
+                            }
                     })
                 }
                 // console.log(docs);
@@ -255,7 +267,7 @@ router.get('/getAllShift', (req, res, next) => {
 
 router.post('/addVehicle', (req, res, next) => {
     const vehicle = new Vehicle({
-        _userId: new mongoose.Types.ObjectId(),
+        _userId: mongoose.Types.ObjectId(),
         regNumber: req.body.regNumber,
         type: req.body.type,
         seatingCapacity: req.body.seatingCapacity
@@ -288,9 +300,8 @@ router.post('/addVehicle', (req, res, next) => {
 router.post('/addRoute', (req, res, next) => {
     const routes = new Routes({
         routeManager: req.body.routeManager,
-        _routeId: mongoose.Types.ObjectId(),
-        _beginLocationId: new mongoose.Types.ObjectId(),
-        _endLocationId: new mongoose.Types.ObjectId()
+        _beginLocationId: req.body._beginLocationId,
+        _endLocationId: req.body._endLocationId
     })
     routes.save().then(result => {
         console.log(result);
@@ -298,7 +309,7 @@ router.post('/addRoute', (req, res, next) => {
             status: 'Successful',
             message: 'Routes added Succesfully',
             object: {
-                _routeId: result._routeId,
+                _routeId: mongoose.Types.ObjectId(),
                 routeManager: result.routeManager,
                 _beginLocationId: result._beginLocationId,
                 _endLocationId: result._endLocationId
@@ -314,19 +325,19 @@ router.post('/addRoute', (req, res, next) => {
 });
 
 router.get('/getRoutes', (req, res, next) => {
-    Shift.find()
+    // Location.find()
+    //     .exec()
+    //     .then
+    Routes.find()
         .exec()
         .then(docs => {
             const response = {
-                count: docs.length,
-                shift: docs.map(doc => {
+                status: 'success',
+                message: 'List of Routes',
+                object: docs.map(doc => {
                     return {
-                        vehicle: doc.vehicle,
-                        shift_title: doc.shift_title,
-                        _driverId: doc._driverId,
-                        shift_status: doc.shift_status,
-                        starting_time: doc.starting_time,
-                        ending_time: doc.ending_time
+                        routeManager: doc.routeManager,
+                        
                     }
                 })
             }
